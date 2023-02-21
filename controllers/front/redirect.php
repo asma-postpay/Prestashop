@@ -1,5 +1,6 @@
 <?php
 
+use Postpay\Exceptions\RESTfulException;
 use Postpay\Postpay;
 
 class postpayRedirectModuleFrontController extends ModuleFrontController {
@@ -190,6 +191,9 @@ class postpayRedirectModuleFrontController extends ModuleFrontController {
         return $bodyStr ;
     }
 
+    /**
+     * @throws \Postpay\Exceptions\PostpayException
+     */
     public function generatePaymentURL($payLoadData){
 
         $postpay = new Postpay([
@@ -198,9 +202,9 @@ class postpayRedirectModuleFrontController extends ModuleFrontController {
         ]);
 
         try {
-            $response = $postpay->post('/checkouts', $payLoadData);
+            $response = $postpay->post('/checkouts', $payLoadData); //Todo fix credentials or payload data
         } catch (RESTfulException $e) {
-            echo $e->getErrorCode();
+            echo $e->getErrorCode(); //Todo throw an Exception here and handle on postProcess with properly redirect to order page with errors
             exit;
         }
 

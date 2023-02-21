@@ -204,21 +204,32 @@ class postpay extends PaymentModule
         // this part is executed only when the form is submitted
         if (Tools::isSubmit('submit' . $this->name)) {
             // retrieve the value set by the user
-            $configValue = (string) Tools::getValue('POSTPAY_CONFIG');
-
-            // check that the value is valid
-            if (empty($configValue) || !Validate::isGenericName($configValue)) {
-                // invalid value, show an error
-                $output = $this->displayError($this->l('Invalid Configuration value'));
-            } else {
-                // value is ok, update it and display a confirmation message
-                Configuration::updateValue('POSTPAY_CONFIG', $configValue);
-                $output = $this->displayConfirmation($this->l('Settings updated'));
-            }
+            $this->postProcess(); //Todo verify values on postProcess method
+            $output = $this->displayConfirmation($this->l('Settings updated'));
+//            $configValue = (string) Tools::getValue('POSTPAY_CONFIG');
+//
+//            // check that the value is valid
+//            if (empty($configValue) || !Validate::isGenericName($configValue)) {
+//                // invalid value, show an error
+//                $output = $this->displayError($this->l('Invalid Configuration value'));
+//            } else {
+//                // value is ok, update it and display a confirmation message
+//                Configuration::updateValue('POSTPAY_CONFIG', $configValue);
+//                $output = $this->displayConfirmation($this->l('Settings updated'));
+//            }
         }
 
         // display any message, then the form
         return $output . $this->displayForm();
+    }
+
+    protected function postProcess(): void
+    {
+        $fields = $this->getFormFields();
+        foreach ($fields as $field => $old_value)
+        {
+            Configuration::updateValue($field, Tools::getValue($field));
+        }
     }
 
     /**
@@ -229,11 +240,11 @@ class postpay extends PaymentModule
     {
         $options = array(
             array(
-                'yes' => 1,       // The value of the 'value' attribute of the <option> tag.
+                'value' => 1,       // The value of the 'value' attribute of the <option> tag.
                 'name' => 'Yes'    // The value of the text content of the  <option> tag.
             ),
             array(
-                'no' => 2,
+                'value' => 2,
                 'name' => 'No'
             ),
         );
@@ -272,7 +283,7 @@ class postpay extends PaymentModule
                         'required' => true,
                         'options' => [
                             'query' => $options,
-                            'id' => 'id_option',
+                            'id' => 'value',
                             'name' => 'name'
                         ],
                    ]],
@@ -296,8 +307,18 @@ class postpay extends PaymentModule
         $helper->default_form_language = (int) Configuration::get('PS_LANG_DEFAULT');
 
         // Load current value into the form
-        $helper->fields_value['POSTPAY_CONFIG'] = Tools::getValue('POSTPAY_CONFIG', Configuration::get('POSTPAY_CONFIG'));
+        $helper->fields_value = $this->getFormFields();
 
         return $helper->generateForm([$form]);
+    }
+
+    public function getFormFields(): array
+    {
+        return [
+            'MID' => Tools::getValue('MID', Configuration::get('MID')),
+            'LSK' => Tools::getValue('LSK', Configuration::get('LSK')),
+            'SSK' => Tools::getValue('SSK', Configuration::get('SSK')),
+            'is_sandbox' => Tools::getValue('is_sandbox', Configuration::get('is_sandbox'))
+        ];
     }
 }
