@@ -204,7 +204,7 @@ class postpayRedirectModuleFrontController extends ModuleFrontController {
         try {
             $response = $postpay->post('/checkouts', $payLoadData); //Todo fix credentials or payload data
         } catch (RESTfulException $e) {
-            echo $e->getErrorCode(); //Todo throw an Exception here and handle on postProcess with properly redirect to order page with errors
+            echo $e->getMessage(); //Todo throw an Exception here and handle on postProcess with properly redirect to order page with errors
             exit;
         }
 
